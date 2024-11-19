@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package simulation;
+
+service Sim {
+  rpc Replies(SimReq) returns (SimResponse) {}
+}
+
+message SimReq{
+  optional string bodyID = 1;
+}
+
+message Vec2D{
+  float x = 1;
+  float y = 2;
+}
+message BodyAttributes{
+  Vec2D velocity = 1;
+  Vec2D position = 2;
+}
+message SimResponse{
+  repeated BodyAttributes bodies = 1;
+}

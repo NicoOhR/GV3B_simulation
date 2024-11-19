@@ -1,0 +1,24 @@
+[[body_attributes]]
+id = 1
+radius = 40.0
+restitution = 1.0
+mass = 300.0
+velocity = { x = 0.0, y = 25.0 }
+position = { x = 500.0, y = 0.0 }
+
+[[body_attributes]]
+id = 2
+radius = 40.0
+restitution = 1.0
+mass = 600.0
+velocity = { x = 0.0, y = 25.0 }
+position = { x = -500.0, y = 0.0 }
+
+[[body_attributes]]
+id = 3
+radius = 40.0
+restitution = 1.0
+mass = 2000.0
+velocity = { x = 0.0, y = 0.0 }
+position = { x = 0.0, y = 0.0 }
+

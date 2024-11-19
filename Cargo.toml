@@ -1,0 +1,25 @@
+[package]
+name = "three_body"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.14.2"
+bevy-tokio-tasks = "0.14.0"
+bevy_prototype_lyon = "0.12.0"
+bevy_rapier2d = "0.27.0"
+colored = "2.1.0"
+physical_constants = "0.5.0"
+prost = "0.13.3"
+rapier2d = "0.22.0"
+serde = "1.0.214"
+tokio = "1.41.0"
+toml = "0.8.19"
+tonic = "0.12.3"
+
+[build-dependencies]
+tonic-build = "0.12.3"
+
+
