@@ -24,7 +24,7 @@ pub struct VectorStruct {
 }
 
 #[derive(Default, Clone, Deserialize, Debug, Component, Copy)]
-pub struct BodyId(u32);
+pub struct BodyId(pub u32);
 
 #[derive(Default, Debug, Resource, Deserialize)]
 pub struct SimulationState {

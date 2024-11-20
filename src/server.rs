@@ -50,6 +50,7 @@ impl Sim for SimulationService {
         for body in &state.body_attributes {
             //TODO: Make this a little less heinous
             body_state = BodyAttributes {
+                body_id: body.id.0,
                 velocity: Some(Vec2D {
                     x: body.velocity.x,
                     y: body.velocity.y,
