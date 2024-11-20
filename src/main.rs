@@ -1,13 +1,34 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    render::{
+        settings::{RenderCreation, WgpuSettings},
+        RenderPlugin,
+    },
+};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
+use std::{env, str::FromStr};
 mod bodies;
 mod server;
 
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
+    let args: Vec<String> = env::args().collect();
+    let mut app = App::new();
+
+    if args.contains(&String::from_str("headless").unwrap()) {
+        app.add_plugins(DefaultPlugins.set(RenderPlugin {
+            synchronous_pipeline_compilation: true,
+            render_creation: RenderCreation::Automatic(WgpuSettings {
+                backends: None,
+                ..default()
+            }),
+        }));
+        println!("[Simulation] Running in headless mode");
+    } else {
+        app.add_plugins(DefaultPlugins);
+    }
+
+    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ShapePlugin)
         .add_plugins(bevy_tokio_tasks::TokioTasksPlugin::default())
