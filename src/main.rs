@@ -7,7 +7,7 @@ use bevy::{
 };
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bodies::RestartBodiesEvent;
+use bodies::StartBodiesEvent;
 use std::{env, str::FromStr};
 mod bodies;
 mod server;
@@ -50,14 +50,14 @@ fn main() {
         .add_systems(Update, bodies::gravity_update)
         .add_systems(Update, camera_update)
         .add_systems(Update, bodies::vector_update.after(bodies::gravity_update))
-        .add_event::<bodies::RestartBodiesEvent>()
+        .add_event::<bodies::StartBodiesEvent>()
         .add_systems(
             Update,
             (
-                bodies::despawn_everything.run_if(on_event::<RestartBodiesEvent>()),
-                bodies::spawn_bodies.run_if(on_event::<RestartBodiesEvent>()),
-                bodies::setup_vectors.run_if(on_event::<RestartBodiesEvent>()),
-                bodies::trigger_restart,
+                bodies::despawn_everything.run_if(on_event::<StartBodiesEvent>()),
+                bodies::spawn_bodies.run_if(on_event::<StartBodiesEvent>()),
+                bodies::setup_vectors.run_if(on_event::<StartBodiesEvent>()),
+                bodies::trigger_start,
             ),
         )
         .run();

@@ -8,7 +8,7 @@ use std::{fs::File, io::Read};
 use crate::server::SimulationService;
 
 #[derive(Event)]
-pub struct RestartBodiesEvent;
+pub struct StartBodiesEvent;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct BodyAttributes {
@@ -40,7 +40,7 @@ pub fn despawn_everything(
     mut commands: Commands,
     query_body: Query<Entity, Or<(With<RigidBody>, With<Collider>)>>,
     query_path: Query<Entity, With<Path>>,
-    mut event_reader: EventReader<RestartBodiesEvent>,
+    mut event_reader: EventReader<StartBodiesEvent>,
 ) {
     for _ in event_reader.read() {
         for body_entity in query_body.iter() {
@@ -52,12 +52,12 @@ pub fn despawn_everything(
     }
 }
 
-pub fn trigger_restart(
-    mut event_writer: EventWriter<RestartBodiesEvent>,
+pub fn trigger_start(
+    mut event_writer: EventWriter<StartBodiesEvent>,
     input: Res<ButtonInput<KeyCode>>,
 ) {
     if input.just_pressed(KeyCode::Space) {
-        event_writer.send(RestartBodiesEvent);
+        event_writer.send(StartBodiesEvent);
         println!("triggered")
     }
 }
@@ -72,7 +72,7 @@ pub fn parse_config() -> SimulationState {
 pub fn spawn_bodies(
     mut commands: Commands,
     bodies: Res<SimulationState>,
-    mut event_reader: EventReader<RestartBodiesEvent>,
+    mut event_reader: EventReader<StartBodiesEvent>,
 ) {
     for _ in event_reader.read() {
         let bodies_iter = &bodies.body_attributes;
