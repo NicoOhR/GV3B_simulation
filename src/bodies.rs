@@ -7,6 +7,9 @@ use std::{fs::File, io::Read};
 
 use crate::server::SimulationService;
 
+#[derive(Event)]
+pub struct RestartBodiesEvent;
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct BodyAttributes {
     pub id: BodyId,
@@ -33,6 +36,32 @@ pub struct SimulationState {
     pub body_attributes: Vec<BodyAttributes>,
 }
 
+pub fn despawn_everything(
+    mut commands: Commands,
+    query_body: Query<Entity, Or<(With<RigidBody>, With<Collider>)>>,
+    query_path: Query<Entity, With<Path>>,
+    mut event_reader: EventReader<RestartBodiesEvent>,
+) {
+    for _ in event_reader.read() {
+        for body_entity in query_body.iter() {
+            commands.entity(body_entity).despawn();
+        }
+        for path_entity in query_path.iter() {
+            commands.entity(path_entity).despawn();
+        }
+    }
+}
+
+pub fn trigger_restart(
+    mut event_writer: EventWriter<RestartBodiesEvent>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    if input.just_pressed(KeyCode::Space) {
+        event_writer.send(RestartBodiesEvent);
+        println!("triggered")
+    }
+}
+
 pub fn parse_config() -> SimulationState {
     let mut file = File::open("config.toml").unwrap();
     let mut configuration = String::new();
@@ -40,25 +69,31 @@ pub fn parse_config() -> SimulationState {
     toml::from_str(&configuration).unwrap()
 }
 
-pub fn spawn_bodies(mut commands: Commands, bodies: Res<SimulationState>) {
-    let bodies_iter = &bodies.body_attributes;
-    for body in bodies_iter {
-        commands
-            .spawn(RigidBody::Dynamic)
-            .insert(Collider::ball(body.radius))
-            .insert(Restitution::coefficient(body.restitution))
-            .insert(ColliderMassProperties::Mass(body.mass))
-            .insert(ExternalForce::default())
-            .insert(body.id)
-            .insert(Velocity {
-                linvel: Vec2::new(body.velocity.x, body.velocity.y),
-                ..default()
-            })
-            .insert(TransformBundle::from(Transform::from_xyz(
-                body.position.x,
-                body.position.y,
-                0.0,
-            )));
+pub fn spawn_bodies(
+    mut commands: Commands,
+    bodies: Res<SimulationState>,
+    mut event_reader: EventReader<RestartBodiesEvent>,
+) {
+    for _ in event_reader.read() {
+        let bodies_iter = &bodies.body_attributes;
+        for body in bodies_iter {
+            commands
+                .spawn(RigidBody::Dynamic)
+                .insert(Collider::ball(body.radius))
+                .insert(Restitution::coefficient(body.restitution))
+                .insert(ColliderMassProperties::Mass(body.mass))
+                .insert(ExternalForce::default())
+                .insert(body.id)
+                .insert(Velocity {
+                    linvel: Vec2::new(body.velocity.x, body.velocity.y),
+                    ..default()
+                })
+                .insert(TransformBundle::from(Transform::from_xyz(
+                    body.position.x,
+                    body.position.y,
+                    0.0,
+                )));
+        }
     }
 }
 

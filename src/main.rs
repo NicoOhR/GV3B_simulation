@@ -7,6 +7,7 @@ use bevy::{
 };
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bodies::RestartBodiesEvent;
 use std::{env, str::FromStr};
 mod bodies;
 mod server;
@@ -46,11 +47,19 @@ fn main() {
         .insert_resource(bodies::parse_config())
         .add_systems(Startup, setup_graphics)
         .add_systems(Startup, server::setup_server)
-        .add_systems(Startup, bodies::spawn_bodies)
-        .add_systems(Startup, bodies::setup_vectors.after(bodies::spawn_bodies))
         .add_systems(Update, bodies::gravity_update)
         .add_systems(Update, camera_update)
         .add_systems(Update, bodies::vector_update.after(bodies::gravity_update))
+        .add_event::<bodies::RestartBodiesEvent>()
+        .add_systems(
+            Update,
+            (
+                bodies::despawn_everything.run_if(on_event::<RestartBodiesEvent>()),
+                bodies::spawn_bodies.run_if(on_event::<RestartBodiesEvent>()),
+                bodies::setup_vectors.run_if(on_event::<RestartBodiesEvent>()),
+                bodies::trigger_restart,
+            ),
+        )
         .run();
 }
 fn setup_graphics(mut commands: Commands) {
