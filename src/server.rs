@@ -45,7 +45,7 @@ pub fn setup_server(
 #[tonic::async_trait]
 impl Sim for SimulationService {
     async fn replies(&self, _request: Request<SimReq>) -> Result<Response<SimResponse>, Status> {
-        println!("{} Responded with: \n {:?}", "[Server]".green(), self.state);
+        //println!("{} Responded with: \n {:?}", "[Server]".green(), self.state);
         let state = self.state.lock().unwrap();
         let mut body_velocity_position: Vec<BodyAttributes> = vec![];
         let mut body_state: BodyAttributes;
