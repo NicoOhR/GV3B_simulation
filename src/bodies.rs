@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::bool, prelude::*};
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
@@ -54,11 +54,13 @@ pub fn despawn_everything(
 
 pub fn trigger_start(
     mut event_writer: EventWriter<StartBodiesEvent>,
-    input: Res<ButtonInput<KeyCode>>,
+    service: ResMut<SimulationService>,
 ) {
-    if input.just_pressed(KeyCode::Space) {
+    let mut reset = service.reset.lock().unwrap();
+    if *reset {
         event_writer.send(StartBodiesEvent);
-        println!("triggered")
+        println!("[Sim] Starting!");
+        *reset = false;
     }
 }
 

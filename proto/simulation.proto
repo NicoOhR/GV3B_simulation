@@ -8,7 +8,7 @@ service Sim {
 
 message SimReq{
   optional string bodyID = 1;
-  optional bool shutdown = 2;
+  optional bool reset = 2;
 }
 
 message Vec2D{

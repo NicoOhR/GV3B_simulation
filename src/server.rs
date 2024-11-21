@@ -14,6 +14,7 @@ use tonic::{transport::Server, Request, Response, Status};
 #[derive(Default, Clone, Resource)]
 pub struct SimulationService {
     pub state: Arc<Mutex<SimulationState>>,
+    pub reset: Arc<Mutex<bool>>,
 }
 
 pub fn setup_server(
@@ -25,6 +26,7 @@ pub fn setup_server(
         state: Arc::new(Mutex::new(SimulationState {
             body_attributes: sim_state.body_attributes.clone(),
         })),
+        reset: Arc::new(Mutex::new(false)),
     };
     commands.insert_resource(service.clone());
 
@@ -61,6 +63,11 @@ impl Sim for SimulationService {
                 }),
             };
             body_velocity_position.push(body_state);
+        }
+
+        if let Some(reset_request) = _request.into_inner().reset {
+            let mut reset = self.reset.lock().unwrap();
+            *reset = reset_request;
         }
 
         let response = SimResponse {
