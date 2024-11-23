@@ -1,10 +1,9 @@
-use bevy::{math::bool, prelude::*};
+use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
 use serde::Deserialize;
-use std::sync::{Arc, Mutex};
-use std::{fs::File, io::Read};
+use std::sync::Arc;
 
 use crate::server;
 
@@ -90,12 +89,12 @@ pub fn trigger_start(
     }
 }
 
-pub fn parse_config() -> SimulationState {
-    let mut file = File::open("config.toml").unwrap();
-    let mut configuration = String::new();
-    file.read_to_string(&mut configuration).unwrap();
-    toml::from_str(&configuration).unwrap()
-}
+//pub fn parse_config() -> SimulationState {
+//    let mut file = File::open("config.toml").unwrap();
+//    let mut configuration = String::new();
+//    file.read_to_string(&mut configuration).unwrap();
+//    toml::from_str(&configuration).unwrap()
+//}
 
 pub fn spawn_bodies(
     mut commands: Commands,

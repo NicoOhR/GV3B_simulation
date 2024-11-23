@@ -1,9 +1,8 @@
 tonic::include_proto!("simulation");
 
 use crate::bodies::SimulationState;
-use bevy::prelude::{Commands, Res, ResMut, Resource};
+use bevy::prelude::{Commands, ResMut, Resource};
 use bevy_tokio_tasks::*;
-use colored::*;
 use sim_server::{Sim, SimServer};
 use std::{
     net::SocketAddr,

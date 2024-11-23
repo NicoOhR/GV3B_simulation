@@ -4,7 +4,6 @@ use bevy::{
         settings::{RenderCreation, WgpuSettings},
         RenderPlugin,
     },
-    winit::WinitPlugin,
 };
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
