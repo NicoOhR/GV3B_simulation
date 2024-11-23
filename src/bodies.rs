@@ -68,6 +68,7 @@ pub fn despawn_everything(
     mut event_reader: EventReader<StartBodiesEvent>,
 ) {
     for _ in event_reader.read() {
+        println!("[Sim] despawned!");
         for body_entity in query_body.iter() {
             commands.entity(body_entity).despawn();
         }
@@ -79,31 +80,24 @@ pub fn despawn_everything(
 
 pub fn trigger_start(
     mut event_writer: EventWriter<StartBodiesEvent>,
-    service: ResMut<server::SimulationService>,
+    service: Res<server::SimulationService>,
 ) {
-    let mut reset = service.reset.lock().unwrap();
+    let reset = service.reset.lock().unwrap();
     if *reset {
         event_writer.send(StartBodiesEvent);
-        println!("[Sim] Starting!");
-        *reset = false;
+        println!("[Sim] Reset Triggered!");
     }
 }
 
-//pub fn parse_config() -> SimulationState {
-//    let mut file = File::open("config.toml").unwrap();
-//    let mut configuration = String::new();
-//    file.read_to_string(&mut configuration).unwrap();
-//    toml::from_str(&configuration).unwrap()
-//}
-
 pub fn spawn_bodies(
     mut commands: Commands,
-    service: Res<server::SimulationService>,
+    service: ResMut<server::SimulationService>,
     mut event_reader: EventReader<StartBodiesEvent>,
 ) {
     for _ in event_reader.read() {
-        let clone = Arc::clone(&service.state);
-        let state = clone.lock().unwrap();
+        println!("[Simulation] spawned bodies");
+        let state = service.state.lock().unwrap();
+        let mut reset = service.reset.lock().unwrap();
         let bodies_iter = &state.body_attributes;
         for body in bodies_iter {
             commands
@@ -123,6 +117,7 @@ pub fn spawn_bodies(
                     0.0,
                 )));
         }
+        *reset = false;
     }
 }
 
@@ -173,28 +168,30 @@ pub fn gravity_update(
         ex_force_2.force = f_2_1.into();
 
         let mut state = service.state.lock().unwrap();
-
-        //shitty imperative code is imperative
-        for body in &mut state.body_attributes {
-            if body.id.0 == body_id_1.0 {
-                body.position = VectorStruct {
-                    x: translation1.translation.truncate().x,
-                    y: translation1.translation.truncate().y,
-                };
-                body.velocity = VectorStruct {
-                    x: velocity_1.linvel.x,
-                    y: velocity_1.linvel.y,
-                };
-            }
-            if body.id.0 == body_id_2.0 {
-                body.position = VectorStruct {
-                    x: translation2.translation.truncate().x,
-                    y: translation2.translation.truncate().y,
-                };
-                body.velocity = VectorStruct {
-                    x: velocity_2.linvel.x,
-                    y: velocity_2.linvel.y,
-                };
+        let reset = service.reset.lock().unwrap();
+        if *reset == false {
+            //shitty imperative code is imperative
+            for body in &mut state.body_attributes {
+                if body.id.0 == body_id_1.0 {
+                    body.position = VectorStruct {
+                        x: translation1.translation.truncate().x,
+                        y: translation1.translation.truncate().y,
+                    };
+                    body.velocity = VectorStruct {
+                        x: velocity_1.linvel.x,
+                        y: velocity_1.linvel.y,
+                    };
+                }
+                if body.id.0 == body_id_2.0 {
+                    body.position = VectorStruct {
+                        x: translation2.translation.truncate().x,
+                        y: translation2.translation.truncate().y,
+                    };
+                    body.velocity = VectorStruct {
+                        x: velocity_2.linvel.x,
+                        y: velocity_2.linvel.y,
+                    };
+                }
             }
         }
     }
