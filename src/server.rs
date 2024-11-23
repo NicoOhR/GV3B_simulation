@@ -17,15 +17,9 @@ pub struct SimulationService {
     pub reset: Arc<Mutex<bool>>,
 }
 
-pub fn setup_server(
-    sim_state: Res<'_, SimulationState>,
-    runtime: ResMut<'_, TokioTasksRuntime>,
-    mut commands: Commands,
-) {
+pub fn setup_server(runtime: ResMut<'_, TokioTasksRuntime>, mut commands: Commands) {
     let service = SimulationService {
-        state: Arc::new(Mutex::new(SimulationState {
-            body_attributes: sim_state.body_attributes.clone(),
-        })),
+        state: Arc::new(Mutex::new(SimulationState::default())),
         reset: Arc::new(Mutex::new(false)),
     };
     commands.insert_resource(service.clone());

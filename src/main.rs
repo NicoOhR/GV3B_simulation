@@ -47,7 +47,6 @@ fn main() {
             scaled_shape_subdivision: 10, // Set subdivision level for scaled shapes
             force_update_from_transform_changes: true, // Force updates based on transform changes
         })
-        .insert_resource(bodies::parse_config())
         .add_systems(Startup, server::setup_server)
         .add_systems(Update, bodies::gravity_update)
         .add_systems(Update, bodies::vector_update.after(bodies::gravity_update))

@@ -3,6 +3,7 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
 use serde::Deserialize;
+use std::sync::{Arc, Mutex};
 use std::{fs::File, io::Read};
 
 use crate::server;
@@ -27,16 +28,16 @@ impl From<server::SimState> for SimulationState {
             .into_iter()
             .map(|body| BodyAttributes {
                 id: BodyId(body.body_id),
-                radius: 0.0, // You can set default values or handle missing fields accordingly
+                radius: 40.0,
                 restitution: 0.0,
                 mass: body.mass,
                 velocity: VectorStruct {
-                    x: body.velocity.unwrap_or_default().x,
-                    y: body.velocity.unwrap_or_default().y,
+                    x: body.velocity.unwrap().x,
+                    y: body.velocity.unwrap().y,
                 },
                 position: VectorStruct {
-                    x: body.position.unwrap_or_default().x,
-                    y: body.position.unwrap_or_default().y,
+                    x: body.position.unwrap().x,
+                    y: body.position.unwrap().y,
                 },
             })
             .collect();
@@ -98,11 +99,13 @@ pub fn parse_config() -> SimulationState {
 
 pub fn spawn_bodies(
     mut commands: Commands,
-    bodies: Res<SimulationState>,
+    service: Res<server::SimulationService>,
     mut event_reader: EventReader<StartBodiesEvent>,
 ) {
     for _ in event_reader.read() {
-        let bodies_iter = &bodies.body_attributes;
+        let clone = Arc::clone(&service.state);
+        let state = clone.lock().unwrap();
+        let bodies_iter = &state.body_attributes;
         for body in bodies_iter {
             commands
                 .spawn(RigidBody::Dynamic)
