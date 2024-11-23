@@ -4,6 +4,7 @@ use bevy::{
         settings::{RenderCreation, WgpuSettings},
         RenderPlugin,
     },
+    winit::WinitPlugin,
 };
 use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
@@ -17,7 +18,7 @@ fn main() {
     let mut app = App::new();
 
     if args.contains(&String::from_str("headless").unwrap()) {
-        app.add_plugins(DefaultPlugins.set(RenderPlugin {
+        app.add_plugins(DefaultPlugins.build().set(RenderPlugin {
             synchronous_pipeline_compilation: true,
             render_creation: RenderCreation::Automatic(WgpuSettings {
                 backends: None,
@@ -26,11 +27,13 @@ fn main() {
         }));
         println!("[Simulation] Running in headless mode");
     } else {
-        app.add_plugins(DefaultPlugins);
+        app.add_plugins(DefaultPlugins)
+            .add_systems(Startup, setup_graphics)
+            .add_systems(Update, camera_update)
+            .add_plugins(RapierDebugRenderPlugin::default());
     }
 
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0))
-        .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ShapePlugin)
         .add_plugins(bevy_tokio_tasks::TokioTasksPlugin::default())
         .insert_resource(RapierConfiguration {
@@ -45,10 +48,8 @@ fn main() {
             force_update_from_transform_changes: true, // Force updates based on transform changes
         })
         .insert_resource(bodies::parse_config())
-        .add_systems(Startup, setup_graphics)
         .add_systems(Startup, server::setup_server)
         .add_systems(Update, bodies::gravity_update)
-        .add_systems(Update, camera_update)
         .add_systems(Update, bodies::vector_update.after(bodies::gravity_update))
         .add_event::<bodies::StartBodiesEvent>()
         .add_systems(

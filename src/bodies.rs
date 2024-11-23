@@ -5,7 +5,7 @@ use rapier2d::na::Vector2;
 use serde::Deserialize;
 use std::{fs::File, io::Read};
 
-use crate::server::SimulationService;
+use crate::server;
 
 #[derive(Event)]
 pub struct StartBodiesEvent;
@@ -18,6 +18,31 @@ pub struct BodyAttributes {
     pub mass: f32,
     pub velocity: VectorStruct,
     pub position: VectorStruct,
+}
+
+impl From<server::SimState> for SimulationState {
+    fn from(sim_state: server::SimState) -> Self {
+        let body_attributes = sim_state
+            .bodies
+            .into_iter()
+            .map(|body| BodyAttributes {
+                id: BodyId(body.body_id),
+                radius: 0.0, // You can set default values or handle missing fields accordingly
+                restitution: 0.0,
+                mass: body.mass,
+                velocity: VectorStruct {
+                    x: body.velocity.unwrap_or_default().x,
+                    y: body.velocity.unwrap_or_default().y,
+                },
+                position: VectorStruct {
+                    x: body.position.unwrap_or_default().x,
+                    y: body.position.unwrap_or_default().y,
+                },
+            })
+            .collect();
+
+        SimulationState { body_attributes }
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -54,7 +79,7 @@ pub fn despawn_everything(
 
 pub fn trigger_start(
     mut event_writer: EventWriter<StartBodiesEvent>,
-    service: ResMut<SimulationService>,
+    service: ResMut<server::SimulationService>,
 ) {
     let mut reset = service.reset.lock().unwrap();
     if *reset {
@@ -119,7 +144,7 @@ pub fn gravity_update(
         &BodyId,
         &Velocity,
     )>,
-    service: ResMut<SimulationService>,
+    service: ResMut<server::SimulationService>,
 ) {
     let mut combinations = bodies.iter_combinations_mut::<2>();
     while let Some([body1, body2]) = combinations.fetch_next() {

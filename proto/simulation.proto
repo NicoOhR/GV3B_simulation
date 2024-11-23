@@ -3,23 +3,31 @@ syntax = "proto3";
 package simulation;
 
 service Sim {
-  rpc Replies(SimReq) returns (SimResponse) {}
+  rpc StateReply(SimCurrentStateReq) returns (SimState) {}
+  rpc SetConfiguration(SimState) returns (ConfigValid) {}
 }
 
-message SimReq{
+message SimCurrentStateReq{
   optional string bodyID = 1;
-  optional bool reset = 2;
 }
 
 message Vec2D{
   float x = 1;
   float y = 2;
 }
+
+message ConfigValid{
+  bool succeeded = 1;
+}
+
 message BodyAttributes{
   Vec2D velocity = 1;
   Vec2D position = 2;
-  uint32 bodyID = 3;
+  float mass = 3;
+  uint32 bodyID = 4;
 }
-message SimResponse{
+
+message SimState{
   repeated BodyAttributes bodies = 1;
 }
+

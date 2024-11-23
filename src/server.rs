@@ -44,7 +44,10 @@ pub fn setup_server(
 
 #[tonic::async_trait]
 impl Sim for SimulationService {
-    async fn replies(&self, _request: Request<SimReq>) -> Result<Response<SimResponse>, Status> {
+    async fn state_reply(
+        &self,
+        _request: Request<SimCurrentStateReq>,
+    ) -> Result<Response<SimState>, Status> {
         //println!("{} Responded with: \n {:?}", "[Server]".green(), self.state);
         let state = self.state.lock().unwrap();
         let mut body_velocity_position: Vec<BodyAttributes> = vec![];
@@ -52,7 +55,6 @@ impl Sim for SimulationService {
         for body in &state.body_attributes {
             //TODO: Make this a little less heinous
             body_state = BodyAttributes {
-                body_id: body.id.0,
                 velocity: Some(Vec2D {
                     x: body.velocity.x,
                     y: body.velocity.y,
@@ -61,19 +63,28 @@ impl Sim for SimulationService {
                     x: body.position.x,
                     y: body.position.y,
                 }),
+                mass: body.mass,
+                body_id: body.id.0,
             };
             body_velocity_position.push(body_state);
         }
 
-        if let Some(reset_request) = _request.into_inner().reset {
-            let mut reset = self.reset.lock().unwrap();
-            *reset = reset_request;
-        }
-
-        let response = SimResponse {
+        let response = SimState {
             bodies: body_velocity_position,
         };
 
         Ok(Response::new(response))
+    }
+
+    async fn set_configuration(
+        &self,
+        request: Request<SimState>,
+    ) -> Result<Response<ConfigValid>, Status> {
+        let mut reset = self.reset.lock().unwrap();
+        *reset = true;
+        let new_state = request.into_inner();
+        let mut state = self.state.lock().unwrap();
+        *state = new_state.into();
+        Ok(Response::new(ConfigValid { succeeded: true }))
     }
 }
