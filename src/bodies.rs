@@ -3,7 +3,6 @@ use bevy_prototype_lyon::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rapier2d::na::Vector2;
 use serde::Deserialize;
-use std::sync::Arc;
 
 use crate::server;
 
@@ -95,7 +94,7 @@ pub fn spawn_bodies(
     mut event_reader: EventReader<StartBodiesEvent>,
 ) {
     for _ in event_reader.read() {
-        println!("[Simulation] spawned bodies");
+        println!("[Sim] spawned bodies");
         let state = service.state.lock().unwrap();
         let mut reset = service.reset.lock().unwrap();
         let bodies_iter = &state.body_attributes;

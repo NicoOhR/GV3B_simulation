@@ -55,7 +55,7 @@ fn main() {
             (
                 bodies::despawn_everything.run_if(on_event::<StartBodiesEvent>()),
                 bodies::spawn_bodies.run_if(on_event::<StartBodiesEvent>()),
-                //bodies::setup_vectors.run_if(on_event::<StartBodiesEvent>()),
+                bodies::setup_vectors.run_if(on_event::<StartBodiesEvent>()),
                 bodies::trigger_start,
             ),
         )

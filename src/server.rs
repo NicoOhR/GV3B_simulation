@@ -3,6 +3,7 @@ tonic::include_proto!("simulation");
 use crate::bodies::SimulationState;
 use bevy::prelude::{Commands, ResMut, Resource};
 use bevy_tokio_tasks::*;
+use colored::*;
 use sim_server::{Sim, SimServer};
 use std::{
     net::SocketAddr,
@@ -41,12 +42,11 @@ impl Sim for SimulationService {
         &self,
         _request: Request<SimCurrentStateReq>,
     ) -> Result<Response<SimState>, Status> {
-        //println!("{} Responded with: \n {:?}", "[Server]".green(), self.state);
+        println!("{} Responded with: \n {:?}", "[Server]".green(), self.state);
         let state = self.state.lock().unwrap();
         let mut body_velocity_position: Vec<BodyAttributes> = vec![];
         let mut body_state: BodyAttributes;
         for body in &state.body_attributes {
-            //TODO: Make this a little less heinous
             body_state = BodyAttributes {
                 velocity: Some(Vec2D {
                     x: body.velocity.x,
@@ -78,6 +78,10 @@ impl Sim for SimulationService {
         let new_state = request.into_inner();
         let mut state = self.state.lock().unwrap();
         *state = new_state.into();
+        println!(
+            "{} New configuration recieved from client",
+            "[Server]".green()
+        );
         Ok(Response::new(ConfigValid { succeeded: true }))
     }
 }
